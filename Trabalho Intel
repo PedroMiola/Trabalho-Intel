@@ -6,8 +6,9 @@
         .model small
         .stack
 
-CR		equ		0dh
-LF		equ		0ah
+CR					equ		0dh
+LF					equ		0ah
+FileHandleSaida		equ		".res"
 
         .data
 
