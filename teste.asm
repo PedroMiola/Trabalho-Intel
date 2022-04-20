@@ -13,7 +13,7 @@ FileHandleSaida		equ		".res"
         .data
 
 FileName			db		256 dup (?)		; Nome do arquivo a ser lido
-FileBuffer			db		10 dup (?)		; Buffer de leitura do arquivo
+FileBuffer			db		0 				; Buffer de leitura do arquivo
 FileHandle			dw		0				; Handler do arquivo
 FileNameBuffer		db		150 dup (?)
 
@@ -27,7 +27,9 @@ SomaCol2			db		0
 SomaCol3			db		0
 SomaCol4			db 		0
 Contador			db		0
-TotalBytes			dd 		0
+TotalBytes			dw 		0
+;TODO		Fazer TotalBytes2 funcionar
+TotalBytes2			db		0	
 
         .code
         .startup
@@ -61,7 +63,7 @@ LoopLeArquivo:
 		jc		ErroReadFile
 		cmp		ax, 0
 		jz		CloseAndFinal
-		inc		TotalBytes
+		add		TotalBytes, 1
 		cmp		Contador,0
 		jz		SomaColuna1
 		cmp		Contador,1
@@ -70,22 +72,26 @@ LoopLeArquivo:
 		jz 		SomaColuna3
 		cmp		Contador,3
 		jz 		SomaColuna4
-
+;! Erro de compilção mostra invalido as instruções de mov e add
 SomaColuna1:
 		inc		Contador
-		add		SomaCol1, FileBuffer
+		mov		ax, FileBuffer
+		add		SomaCol1, ax
 		jmp		LoopLeArquivo
 SomaColuna2:
 		inc		Contador
-		add		SomaCol2, FileBuffer
+		mov		ax, FileBuffer
+		add		SomaCol2, ax
 		jmp		LoopLeArquivo
 SomaColuna3:
 		inc		Contador
-		add		SomaCol3, FileBuffer
+		mov		ax, FileBuffer
+		add		SomaCol3, ax
 		jmp		LoopLeArquivo
 SomaColuna4:
 		mov		Contador, 0
-		add		SomaCol4, FileBuffer
+		mov		ax, FileBuffer
+		add		SomaCol4, ax
 		jmp		LoopLeArquivo
 
 ErroOpenFile:
