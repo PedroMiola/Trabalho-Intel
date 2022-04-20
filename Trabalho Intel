@@ -47,7 +47,7 @@ TotalBytes			dd 		0
 		lea		dx,FileName
 		mov		ah,3dh
 		int		21h
-		jc		ErroOpenFile			
+		jc		ErroOpenFile	;If (CF == 1), erro ao abrir o arquivo			
 
 Final:
 		.exit
