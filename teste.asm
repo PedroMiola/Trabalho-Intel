@@ -22,10 +22,11 @@ MsgErroOpenFile		db		"Erro na abertura do arquivo.", CR, LF, 0
 MsgErroReadFile		db		"Erro na leitura do arquivo.", CR, LF, 0
 MsgCRLF				db		CR, LF, 0
         
-SomaCol1			db		50h
+SomaCol1			db		0
 SomaCol2			db		0
 SomaCol3			db		0
 SomaCol4			db 		0
+Contador			db		0
 TotalBytes			dd 		0
 
         .code
@@ -50,16 +51,62 @@ TotalBytes			dd 		0
 		jc		ErroOpenFile	;If (CF == 1), erro ao abrir o arquivo	
 
 		mov		FileHandle,ax		; Salva handle do arquivo
-		lea		bx, SomaCol1
-		call 	printf_s
-Final:
-		.exit
+		
+LoopLeArquivo:
+		mov		bx, FileHandle
+		mov		ah, 3fh
+		mov 	cx, 1
+		lea		dx, FileBuffer
+		int 	21H
+		jc		ErroReadFile
+		cmp		ax, 0
+		jz		CloseAndFinal
+		inc		TotalBytes
+		cmp		Contador,0
+		jz		SomaColuna1
+		cmp		Contador,1
+		jz 		SomaColuna2
+		cmp		Contador,2
+		jz 		SomaColuna3
+		cmp		Contador,3
+		jz 		SomaColuna4
+
+SomaColuna1:
+		inc		Contador
+		add		SomaCol1, FileBuffer
+		jmp		LoopLeArquivo
+SomaColuna2:
+		inc		Contador
+		add		SomaCol2, FileBuffer
+		jmp		LoopLeArquivo
+SomaColuna3:
+		inc		Contador
+		add		SomaCol3, FileBuffer
+		jmp		LoopLeArquivo
+SomaColuna4:
+		mov		Contador, 0
+		add		SomaCol4, FileBuffer
+		jmp		LoopLeArquivo
 
 ErroOpenFile:
 		lea		bx,MsgErroOpenFile
 		call	printf_s
 		mov		al,1
 		jmp		Final
+
+ErroReadFile:
+		lea		bx, MsgErroReadFile
+		call	printf_s
+		mov		al, 1
+		jmp		CloseAndFinal
+
+CloseAndFinal:
+		mov		bx, FileHandle
+		mov		ah, 3eh
+		int		21h
+		jmp		Final
+Final:
+		.exit
 ;
 ;--------------------------------------------------------------------
 ;Funcao: Le o nome do arquivo do teclado
