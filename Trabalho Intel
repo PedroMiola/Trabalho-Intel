@@ -1,7 +1,7 @@
-;*               Trabalho Intel
-;*
-;*Aluno:         Pedro Poli Miola   334610
-;*Professor:     Azambuja
+;               Trabalho Intel
+;
+;Aluno:         Pedro Poli Miola   334610
+;Professor:     Azambuja
 
         .model small
         .stack
@@ -12,20 +12,55 @@ FileHandleSaida		equ		".res"
 
         .data
 
-FileName		db		256 dup (?)		; Nome do arquivo a ser lido
-FileBuffer		db		10 dup (?)		; Buffer de leitura do arquivo
-FileHandle		dw		0				; Handler do arquivo
-FileNameBuffer	db		150 dup (?)
+FileName			db		256 dup (?)		; Nome do arquivo a ser lido
+FileBuffer			db		10 dup (?)		; Buffer de leitura do arquivo
+FileHandle			dw		0				; Handler do arquivo
+FileNameBuffer		db		150 dup (?)
 
-MsgPedeArquivo		db	"Nome do arquivo: ", 0
-MsgErroOpenFile		db	"Erro na abertura do arquivo.", CR, LF, 0
-MsgErroReadFile		db	"Erro na leitura do arquivo.", CR, LF, 0
-MsgCRLF				db	CR, LF, 0
+MsgPedeArquivo		db		"Nome do arquivo: ", 0
+MsgErroOpenFile		db		"Erro na abertura do arquivo.", CR, LF, 0
+MsgErroReadFile		db		"Erro na leitura do arquivo.", CR, LF, 0
+MsgCRLF				db		CR, LF, 0
         
+SomaCol1			db		0
+SomaCol2			db		0
+SomaCol3			db		0
+SomaCol4			db 		0
+TotalBytes			dd 		0
+
         .code
         .startup
 
-;Função para pegar o nome do arquivo
+
+		mov		ax,ds
+		mov		es,ax
+
+		;	Pega o nome do arquivo
+		call GetFileName
+
+		;	Quebra a linha
+		lea		bx,MsgCRLF
+		call	printf_s
+
+		;	Abre o arquivo
+		mov		al,0
+		lea		dx,FileName
+		mov		ah,3dh
+		int		21h
+		jc		ErroOpenFile			
+
+Final:
+		.exit
+
+ErroOpenFile:
+		lea		bx,MsgErroOpenFile
+		call	printf_s
+		mov		al,1
+		jmp		Final
+;
+;--------------------------------------------------------------------
+;Funcao: Le o nome do arquivo do teclado
+;--------------------------------------------------------------------
 GetFileName	proc	near
 		lea		bx,MsgPedeArquivo			; Coloca mensagem que pede o nome do arquivo
 		call	printf_s
@@ -47,7 +82,11 @@ GetFileName	proc	near
 		ret
 GetFileName	endp
 
-;Função para escrever uma string na tela
+;
+;--------------------------------------------------------------------
+;Função Escrever um string na tela
+;		printf_s(char *s -> BX)
+;--------------------------------------------------------------------
 printf_s	proc	near
 	mov		dl,[bx]
 	cmp		dl,0
@@ -64,3 +103,19 @@ printf_s	proc	near
 ps_1:
 	ret
 printf_s	endp
+
+;
+;--------------------------------------------------------------------
+;Função: Escreve o valor de AX na tela
+;--------------------------------------------------------------------
+printf_w	proc	near
+	; sprintf_w(AX, BufferWRWORD)
+	lea		bx,BufferWRWORD
+	call	sprintf_w
+	
+	; printf_s(BufferWRWORD)
+	lea		bx,BufferWRWORD
+	call	printf_s
+	
+	ret
+printf_w	endp
