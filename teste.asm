@@ -22,7 +22,7 @@ MsgErroOpenFile		db		"Erro na abertura do arquivo.", CR, LF, 0
 MsgErroReadFile		db		"Erro na leitura do arquivo.", CR, LF, 0
 MsgCRLF				db		CR, LF, 0
         
-SomaCol1			db		0
+SomaCol1			db		50h
 SomaCol2			db		0
 SomaCol3			db		0
 SomaCol4			db 		0
@@ -50,10 +50,8 @@ TotalBytes			dd 		0
 		jc		ErroOpenFile	;If (CF == 1), erro ao abrir o arquivo	
 
 		mov		FileHandle,ax		; Salva handle do arquivo
-		lea		bx,MsgCRLF
-		call	printf_s		
-		lea		bx,FileHandle
-		call	printf_s
+		lea		bx, SomaCol1
+		call 	printf_s
 Final:
 		.exit
 
