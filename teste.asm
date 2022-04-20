@@ -106,6 +106,22 @@ CloseAndFinal:
 		int		21h
 		jmp		Final
 Final:
+		lea		bx,SomaCol1
+		call	printf_s
+		lea 	bx, MsgCRLF
+		call	printf_s
+		lea		bx,SomaCol2
+		call	printf_s
+		lea 	bx, MsgCRLF
+		call	printf_s
+		lea		bx,SomaCol3
+		call	printf_s
+		lea 	bx, MsgCRLF
+		call	printf_s
+		lea		bx,SomaCol4
+		call	printf_s
+		lea 	bx, MsgCRLF
+		call	printf_s
 		.exit
 ;
 ;--------------------------------------------------------------------
