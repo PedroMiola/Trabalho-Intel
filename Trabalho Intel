@@ -47,8 +47,13 @@ TotalBytes			dd 		0
 		lea		dx,FileName
 		mov		ah,3dh
 		int		21h
-		jc		ErroOpenFile	;If (CF == 1), erro ao abrir o arquivo			
+		jc		ErroOpenFile	;If (CF == 1), erro ao abrir o arquivo	
 
+		mov		FileHandle,ax		; Salva handle do arquivo
+		lea		bx,MsgCRLF
+		call	printf_s		
+		lea		bx,FileHandle
+		call	printf_s
 Final:
 		.exit
 
