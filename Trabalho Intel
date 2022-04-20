@@ -104,18 +104,7 @@ ps_1:
 	ret
 printf_s	endp
 
-;
+
 ;--------------------------------------------------------------------
-;Função: Escreve o valor de AX na tela
+		end
 ;--------------------------------------------------------------------
-printf_w	proc	near
-	; sprintf_w(AX, BufferWRWORD)
-	lea		bx,BufferWRWORD
-	call	sprintf_w
-	
-	; printf_s(BufferWRWORD)
-	lea		bx,BufferWRWORD
-	call	printf_s
-	
-	ret
-printf_w	endp
