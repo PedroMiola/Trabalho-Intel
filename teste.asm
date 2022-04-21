@@ -12,14 +12,18 @@ FileHandleSaida		equ		".res"
 
         .data
 
-FileName			db		256 dup (?)		; Nome do arquivo a ser lido
-FileBuffer			db		0 				; Buffer de leitura do arquivo
-FileHandle			dw		0				; Handler do arquivo
+FileName			db		256 dup (?)				; Nome do arquivo a ser lido
+FileNameDst			db		"resultado .txt", 0		; Nome do arquivo a ser escrito
+FileBuffer			db		0 						; Buffer de leitura do arquivo
+FileHandle			dw		0						; Handler do arquivo de leitura
+FileHandleDst		dw		0						; Handler do arquivo de saida
 FileNameBuffer		db		150 dup (?)
 
 MsgPedeArquivo		db		"Nome do arquivo: ", 0
 MsgErroOpenFile		db		"Erro na abertura do arquivo.", CR, LF, 0
 MsgErroReadFile		db		"Erro na leitura do arquivo.", CR, LF, 0
+MsgErroCreateFile	db		"Erro na criacao do arquivo", CR, LF, 0
+MsgErroWriteFile	db		"Erro na escrita do arquivo", CR, LF, 0
 MsgCRLF				db		CR, LF, 0
         
 SomaCol1			db		0
@@ -46,53 +50,46 @@ TotalBytes2			db		0
 		call	printf_s
 
 		;	Abre o arquivo
-		mov		al,0
 		lea		dx,FileName
-		mov		ah,3dh
-		int		21h
-		jc		ErroOpenFile	;If (CF == 1), erro ao abrir o arquivo	
-
+		call 	fopen
+		jc		ErroOpenFile		;If (CF == 1), erro ao abrir o arquivo	
 		mov		FileHandle,ax		; Salva handle do arquivo
+		;	Cria o arquivo de saida
+		lea		dx, FileNameDst
+		call	fcreate
+		jc		ErroCreateFile
+		mov		FileHandleDst, ax
 		
 LoopLeArquivo:
 		mov		bx, FileHandle
-		mov		ah, 3fh
-		mov 	cx, 1
-		lea		dx, FileBuffer
-		int 	21H
+		call	getChar
 		jc		ErroReadFile
 		cmp		ax, 0
 		jz		CloseAndFinal
-		add		TotalBytes, 1
-		cmp		Contador,0
-		jz		SomaColuna1
-		cmp		Contador,1
-		jz 		SomaColuna2
-		cmp		Contador,2
-		jz 		SomaColuna3
-		cmp		Contador,3
-		jz 		SomaColuna4
-;! Erro de compilção mostra invalido as instruções de mov e add
-SomaColuna1:
-		inc		Contador
-		mov		ax, FileBuffer
-		add		SomaCol1, ax
+		cmp		Contador, 0
+		je		Col1
+		cmp		Contador, 1
+		je		Col2
+		cmp		Contador, 2
+		je		Col3
+		cmp		Contador, 3
+		je 		Col4
+	Col1:
+		add		Contador, 1
+		add		SomaCol1, dl
 		jmp		LoopLeArquivo
-SomaColuna2:
-		inc		Contador
-		mov		ax, FileBuffer
-		add		SomaCol2, ax
+	Col2:
+		add		Contador, 1
+		add		SomaCol2, dl
 		jmp		LoopLeArquivo
-SomaColuna3:
-		inc		Contador
-		mov		ax, FileBuffer
-		add		SomaCol3, ax
-		jmp		LoopLeArquivo
-SomaColuna4:
+	Col3:
+		add		Contador, 1
+		add		SomaCol3, dl
+		jmp 	LoopLeArquivo
+	Col4:
 		mov		Contador, 0
-		mov		ax, FileBuffer
-		add		SomaCol4, ax
-		jmp		LoopLeArquivo
+		add		SomaCol4, dl
+		jmp 	LoopLeArquivo
 
 ErroOpenFile:
 		lea		bx,MsgErroOpenFile
@@ -106,28 +103,25 @@ ErroReadFile:
 		mov		al, 1
 		jmp		CloseAndFinal
 
+ErroCreateFile:
+		lea		bx, MsgErroCreateFile
+		call	printf_s
+		mov		al, 1
+		jmp		CloseAndFinal
+
+ErroWriteFile:
+		lea 	bx, MsgErroWriteFile
+		call	printf_s
+		mov		al, 1
+		jmp		CloseAndFinal
+
 CloseAndFinal:
 		mov		bx, FileHandle
-		mov		ah, 3eh
-		int		21h
+		call	fclose
+		mov		bx, FileHandleDst
+		call	fclose
 		jmp		Final
 Final:
-		lea		bx,SomaCol1
-		call	printf_s
-		lea 	bx, MsgCRLF
-		call	printf_s
-		lea		bx,SomaCol2
-		call	printf_s
-		lea 	bx, MsgCRLF
-		call	printf_s
-		lea		bx,SomaCol3
-		call	printf_s
-		lea 	bx, MsgCRLF
-		call	printf_s
-		lea		bx,SomaCol4
-		call	printf_s
-		lea 	bx, MsgCRLF
-		call	printf_s
 		.exit
 ;
 ;--------------------------------------------------------------------
@@ -175,6 +169,91 @@ printf_s	proc	near
 ps_1:
 	ret
 printf_s	endp
+
+;
+;--------------------------------------------------------------------
+;Função Escrever um char na tela
+;		Entra: DL -> Char a ser escrito
+;--------------------------------------------------------------------
+printf_c	proc	near
+		mov		ah, 2
+		int		21H
+		ret
+printf_c	endp
+
+;
+;--------------------------------------------------------------------
+;Função	Le um caractere do arquivo identificado pelo HANLDE BX
+;		getChar(handle->BX)
+;Entra: BX -> file handle
+;Sai:   dl -> caractere
+;		AX -> numero de caracteres lidos
+;		CF -> "0" se leitura ok
+;--------------------------------------------------------------------
+getChar	proc	near
+	mov		ah,3fh
+	mov		cx,1
+	lea		dx,FileBuffer
+	int		21h
+	mov		dl,FileBuffer
+	ret
+getChar	endp
+
+;
+;--------------------------------------------------------------------
+;Entra: BX -> file handle
+;       dl -> caractere
+;Sai:   AX -> numero de caracteres escritos
+;		CF -> "0" se escrita ok
+;--------------------------------------------------------------------
+setChar	proc	near
+	mov		ah,40h
+	mov		cx,1
+	mov		FileBuffer,dl
+	lea		dx,FileBuffer
+	int		21h
+	ret
+setChar	endp	
+
+;
+;--------------------------------------------------------------------
+;Função	Abre o arquivo cujo nome está no string apontado por DX
+;		boolean fopen(char *FileName -> DX)
+;Entra: DX -> ponteiro para o string com o nome do arquivo
+;Sai:   AX -> handle do arquivo
+;       CF -> 0, se OK
+;--------------------------------------------------------------------
+fopen	proc	near
+	mov		al,0
+	mov		ah,3dh
+	int		21h
+	ret
+fopen	endp
+
+;
+;--------------------------------------------------------------------
+;Função Cria o arquivo cujo nome está no string apontado por DX
+;		boolean fcreate(char *FileName -> DX)
+;Sai:   AX -> handle do arquivo
+;       CF -> 0, se OK
+;--------------------------------------------------------------------
+fcreate	proc	near
+	mov		cx,0
+	mov		ah,3ch
+	int		21h
+	ret
+fcreate	endp
+
+;
+;--------------------------------------------------------------------
+;Entra:	BX -> file handle
+;Sai:	CF -> "0" se OK
+;--------------------------------------------------------------------
+fclose	proc	near
+	mov		ah,3eh
+	int		21h
+	ret
+fclose	endp
 
 
 ;--------------------------------------------------------------------
