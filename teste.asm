@@ -25,6 +25,7 @@ MsgErroReadFile		db		"Erro na leitura do arquivo.", CR, LF, 0
 MsgErroCreateFile	db		"Erro na criacao do arquivo", CR, LF, 0
 MsgErroWriteFile	db		"Erro na escrita do arquivo", CR, LF, 0
 MsgCRLF				db		CR, LF, 0
+MsgSoma				db		"Soma: ", 0
         
 SomaCol1			db		0
 SomaCol2			db		0
@@ -121,6 +122,16 @@ CloseAndFinal:
 		call	fclose
 		mov		bx, FileHandleDst
 		call	fclose
+		lea		bx,MsgSoma
+		call    printf_s
+		mov		cl, SomaCol1
+		call	printf_h
+		mov		cl, SomaCol2
+		call	printf_h
+		mov		cl, SomaCol3
+		call	printf_h
+		mov		cl, SomaCol4
+		call	printf_h
 		jmp		Final
 Final:
 		.exit
@@ -185,22 +196,34 @@ printf_c	endp
 ;
 ;--------------------------------------------------------------------
 ;Função Escrever um Hexa na tela
-;		Entra: BL -> Hexa a ser escrito
+;		Entra: CL -> Hexa a ser escrito
 ;--------------------------------------------------------------------
 printf_h	proc	near
-			mov		al, bl
+			mov		al, cl
 			and		al, 0f0h
-			and		bl, 0fh
+			and		cl, 0fh
+
+			shr		al, 1
+			shr		al, 1
+			shr		al, 1
+			shr		al, 1
 			add		al, al
-			lea		cx,VetorHexa
-			add		cx, al
-			mov		dl, [cx]
-			call printf_c
-			add		bl, bl
-			lea		cx,VetorHexa
-			add		cx, bl
-			mov		dl, [cx]
+			lea		bx,VetorHexa
+			and		ah, 0
+			add		bx, ax
+			mov		dl, [bx]
+			call 	printf_c
+
+			add		cl, cl
+			lea		bx,VetorHexa
+			and		ch, 0
+			add		bx, cx
+			mov		dl, [bx]
 			call	printf_c
+
+			mov		dl, 20h
+			call	printf_c
+			
 printf_h	endp
 
 ;
