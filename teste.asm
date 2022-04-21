@@ -34,6 +34,7 @@ Contador			db		0
 TotalBytes			dw 		0
 ;TODO		Fazer TotalBytes2 funcionar
 TotalBytes2			db		0	
+VetorHexa			dw		"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"
 
         .code
         .startup
@@ -180,6 +181,27 @@ printf_c	proc	near
 		int		21H
 		ret
 printf_c	endp
+
+;
+;--------------------------------------------------------------------
+;Função Escrever um Hexa na tela
+;		Entra: BL -> Hexa a ser escrito
+;--------------------------------------------------------------------
+printf_h	proc	near
+			mov		al, bl
+			and		al, 0f0h
+			and		bl, 0fh
+			add		al, al
+			lea		cx,VetorHexa
+			add		cx, al
+			mov		dl, [cx]
+			call printf_c
+			add		bl, bl
+			lea		cx,VetorHexa
+			add		cx, bl
+			mov		dl, [cx]
+			call	printf_c
+printf_h	endp
 
 ;
 ;--------------------------------------------------------------------
