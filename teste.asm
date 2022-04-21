@@ -36,6 +36,7 @@ TotalBytes			dw 		0
 ;TODO		Fazer TotalBytes2 funcionar
 TotalBytes2			db		0	
 VetorHexa			dw		"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"
+FlagErro			db		0
 
         .code
         .startup
@@ -96,25 +97,25 @@ LoopLeArquivo:
 ErroOpenFile:
 		lea		bx,MsgErroOpenFile
 		call	printf_s
-		mov		al,1
+		mov		FlagErro,1
 		jmp		Final
 
 ErroReadFile:
 		lea		bx, MsgErroReadFile
 		call	printf_s
-		mov		al, 1
+		mov		FlagErro, 1
 		jmp		CloseAndFinal
 
 ErroCreateFile:
 		lea		bx, MsgErroCreateFile
 		call	printf_s
-		mov		al, 1
+		mov		FlagErro, 1
 		jmp		CloseAndFinal
 
 ErroWriteFile:
 		lea 	bx, MsgErroWriteFile
 		call	printf_s
-		mov		al, 1
+		mov		FlagErro, 1
 		jmp		CloseAndFinal
 
 CloseAndFinal:
@@ -122,6 +123,8 @@ CloseAndFinal:
 		call	fclose
 		mov		bx, FileHandleDst
 		call	fclose
+		cmp		FlagErro,1
+		je		Final
 		lea		bx,MsgSoma
 		call    printf_s
 		mov		cl, SomaCol1
@@ -223,7 +226,7 @@ printf_h	proc	near
 
 			mov		dl, 20h
 			call	printf_c
-			
+
 printf_h	endp
 
 ;
