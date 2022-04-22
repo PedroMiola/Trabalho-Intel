@@ -38,10 +38,10 @@ TotalBytes			dw 		0
 TotalBytes2			db		0	
 VetorHexa			dw		"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"
 FlagErro			db		0
-BufferWRWORD		dw		0
-sw_n	dw	0
-sw_f	db	0
-sw_m	dw	0
+BufferWRWORD		db		20 dup (?)
+sw_n				dw		0
+sw_f				db		0
+sw_m				dw		0
 
         .code
         .startup
@@ -74,6 +74,10 @@ LoopLeArquivo:
 		jc		ErroReadFile
 		cmp		ax, 0
 		jz		CloseAndFinal
+		inc		TotalBytes
+		cmp		TotalBytes, 0
+		je		SomaOverFlowwwwwwww
+	Colunas:
 		cmp		Contador, 0
 		je		Col1
 		cmp		Contador, 1
@@ -98,6 +102,10 @@ LoopLeArquivo:
 		mov		Contador, 0
 		add		SomaCol4, dl
 		jmp 	LoopLeArquivo
+
+SomaOverFlowwwwwwww:
+		inc		TotalBytes2
+		jmp		Colunas
 
 ErroOpenFile:
 		lea		bx,MsgErroOpenFile
@@ -132,19 +140,27 @@ CloseAndFinal:
 		je		Final
 		lea		bx, MsgTotalBytes
 		call	printf_s
+		;cmp		TotalBytes2, 1
+		;jne		PulaEsseNumero
+		;mov		dl, 31h
+		;call	printf_c
+;PulaEsseNumero:
 		mov		ax, TotalBytes
-		call	printf_w
+		lea		bx,BufferWRWORD
+		call	sprintf_w
+		lea		bx,BufferWRWORD
+		call	printf_s
 		lea		bx, MsgCRLF
 		call	printf_s
 		lea		bx,MsgSoma
 		call    printf_s
-		mov		cl, SomaCol1
+		mov		al, SomaCol1
 		call	printf_h
-		mov		cl, SomaCol2
+		mov		al, SomaCol2
 		call	printf_h
-		mov		cl, SomaCol3
+		mov		al, SomaCol3
 		call	printf_h
-		mov		cl, SomaCol4
+		mov		al, SomaCol4
 		call	printf_h
 		jmp		Final
 Final:
@@ -213,7 +229,7 @@ printf_c	endp
 ;		Entra: CL -> Hexa a ser escrito
 ;--------------------------------------------------------------------
 printf_h	proc	near
-			mov		al, cl
+			mov		cl, al
 			and		al, 0f0h
 			and		cl, 0fh
 
@@ -248,11 +264,11 @@ printf_h	endp
 printf_w	proc	near
 	; sprintf_w(AX, BufferWRWORD)
 	lea		bx,BufferWRWORD
-	call	sprintf_w
+	;call	sprintf_w
 	
 	; printf_s(BufferWRWORD)
 	lea		bx,BufferWRWORD
-	call	printf_s
+	;call	printf_s
 	
 	ret
 printf_w	endp
