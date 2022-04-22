@@ -42,6 +42,8 @@ BufferWRWORD		db		20 dup (?)
 sw_n				dw		0
 sw_f				db		0
 sw_m				dw		0
+BufferChar			db		0
+BufferPutChar		db		0
 
         .code
         .startup
@@ -74,6 +76,9 @@ LoopLeArquivo:
 		jc		ErroReadFile
 		cmp		ax, 0
 		jz		CloseAndFinal
+		mov		BufferChar, dl
+		mov		al, dl
+		call 	putChar		
 		inc		TotalBytes
 		cmp		TotalBytes, 0
 		je		SomaOverFlowwwwwwww
@@ -88,18 +93,22 @@ LoopLeArquivo:
 		je 		Col4
 	Col1:
 		add		Contador, 1
+		mov		dl, BufferChar
 		add		SomaCol1, dl
 		jmp		LoopLeArquivo
 	Col2:
 		add		Contador, 1
+		mov		dl, BufferChar
 		add		SomaCol2, dl
 		jmp		LoopLeArquivo
 	Col3:
 		add		Contador, 1
+		mov		dl, BufferChar
 		add		SomaCol3, dl
 		jmp 	LoopLeArquivo
 	Col4:
 		mov		Contador, 0
+		mov		dl, BufferChar
 		add		SomaCol4, dl
 		jmp 	LoopLeArquivo
 
@@ -253,25 +262,8 @@ printf_h	proc	near
 
 			mov		dl, 20h
 			call	printf_c
-
+			ret
 printf_h	endp
-
-;
-;--------------------------------------------------------------------
-;Função: Escreve o valor de AX na tela
-;		printf("%
-;--------------------------------------------------------------------
-printf_w	proc	near
-	; sprintf_w(AX, BufferWRWORD)
-	lea		bx,BufferWRWORD
-	;call	sprintf_w
-	
-	; printf_s(BufferWRWORD)
-	lea		bx,BufferWRWORD
-	;call	printf_s
-	
-	ret
-printf_w	endp
 
 ;
 ;--------------------------------------------------------------------
@@ -340,6 +332,45 @@ getChar	proc	near
 	mov		dl,FileBuffer
 	ret
 getChar	endp
+
+;
+;--------------------------------------------------------------------
+;Função recebe um char ASCII e coloca seu valor em Hexa em arquivo
+;Entra: Bx-> File Handle
+;		al-> Char ASCII
+;Sai:	CF-> 0 se deu certo
+;--------------------------------------------------------------------
+putChar	proc	near
+		mov		BufferPutChar, al
+		and		al, 0f0h
+		
+
+		shr		al, 1
+		shr		al, 1
+		shr		al, 1
+		shr		al, 1
+		add		al, al
+		lea		bx,VetorHexa
+		and		ah, 0
+		add		bx, ax
+		mov		dl, [bx]
+		mov		bx, FileHandleDst
+		call 	setChar
+		jc		ErroPutChar
+		
+		mov		al, BufferPutChar
+		and		al, 0fh
+		add		al, al
+		lea		bx,VetorHexa
+		and		ah, 0
+		add		bx, ax
+		mov		dl, [bx]
+		mov		bx, FileHandleDst
+		call	setChar
+
+ErroPutChar:
+		ret
+putChar	endp
 
 ;
 ;--------------------------------------------------------------------
