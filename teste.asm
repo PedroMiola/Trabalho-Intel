@@ -110,6 +110,12 @@ LoopLeArquivo:
 		mov		Contador, 0
 		mov		dl, BufferChar
 		add		SomaCol4, dl
+		mov		bx, FileHandleDst
+		mov		dl, CR
+		call    setChar
+		mov		bx, FileHandleDst
+		mov		dl, LF
+		call    setChar
 		jmp 	LoopLeArquivo
 
 SomaOverFlowwwwwwww:
@@ -141,6 +147,17 @@ ErroWriteFile:
 		jmp		CloseAndFinal
 
 CloseAndFinal:
+		cmp		FlagErro,1
+		je		PulaEssaCoisaAqui
+		mov		al, SomaCol1
+		call 	putNib
+		mov		al, SomaCol2
+		call 	putNib
+		mov		al, SomaCol3
+		call 	putNib
+		mov		al, SomaCol4
+		call 	putNib
+PulaEssaCoisaAqui:
 		mov		bx, FileHandle
 		call	fclose
 		mov		bx, FileHandleDst
@@ -386,8 +403,47 @@ setChar	proc	near
 	lea		dx,FileBuffer
 	int		21h
 	ret
-setChar	endp	
+setChar	endp
 
+;
+;--------------------------------------------------------------------
+; Função para colora um nibble no arquivo
+; Entra BX->filehandle
+;		al->char
+;--------------------------------------------------------------------
+putNib	proc	near
+	mov		BufferPutChar, al
+	mov		bx, FileHandleDst
+	mov		dl, 30h
+	call	setChar
+	mov		al, BufferPutChar
+	shr		al, 1
+	shr		al, 1
+	shr		al, 1
+	shr		al, 1
+	add		al, al
+	lea		bx,VetorHexa
+	and		ah, 0
+	add		bx, ax
+	mov		dl, [bx]
+	mov		bx, FileHandleDst
+	call 	setChar
+	jc		ErroPutChar
+	
+	mov		bx, FileHandleDst
+	mov		dl, 30h
+	call	setChar
+	mov		al, BufferPutChar
+	and		al, 0fh
+	add		al, al
+	lea		bx,VetorHexa
+	and		ah, 0
+	add		bx, ax
+	mov		dl, [bx]
+	mov		bx, FileHandleDst
+	call	setChar
+	ret
+putNib	endp
 ;
 ;--------------------------------------------------------------------
 ;Função	Abre o arquivo cujo nome está no string apontado por DX
