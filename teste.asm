@@ -413,6 +413,8 @@ setChar	endp
 ;--------------------------------------------------------------------
 putNib	proc	near
 	mov		BufferPutChar, al
+	cmp		Contador, 3
+	jne		PulaEssaParadaAqui
 	mov		bx, FileHandleDst
 	mov		dl, 30h
 	call	setChar
@@ -429,7 +431,37 @@ putNib	proc	near
 	mov		bx, FileHandleDst
 	call 	setChar
 	jc		ErroPutChar
-	
+	mov		bx, FileHandleDst
+	mov		dl, CR
+	call    setChar
+	mov		bx, FileHandleDst
+	mov		dl, LF
+	call    setChar
+	mov		Contador,0
+	jmp 	ParteDois
+
+PulaEssaParadaAqui:
+	inc		Contador
+	mov		bx, FileHandleDst
+	mov		dl, 30h
+	call	setChar
+	mov		al, BufferPutChar
+	shr		al, 1
+	shr		al, 1
+	shr		al, 1
+	shr		al, 1
+	add		al, al
+	lea		bx,VetorHexa
+	and		ah, 0
+	add		bx, ax
+	mov		dl, [bx]
+	mov		bx, FileHandleDst
+	call 	setChar
+	jc		ErroPutChar
+
+ParteDois:
+	cmp		Contador, 3
+	jne		PulaEssaParadaAqui1
 	mov		bx, FileHandleDst
 	mov		dl, 30h
 	call	setChar
@@ -442,6 +474,30 @@ putNib	proc	near
 	mov		dl, [bx]
 	mov		bx, FileHandleDst
 	call	setChar
+	mov		bx, FileHandleDst
+	mov		dl, CR
+	call    setChar
+	mov		bx, FileHandleDst
+	mov		dl, LF
+	call    setChar
+	mov		Contador,0
+	jmp 	ACABOUUUU
+
+PulaEssaParadaAqui1:
+	inc		Contador
+	mov		bx, FileHandleDst
+	mov		dl, 30h
+	call	setChar
+	mov		al, BufferPutChar
+	and		al, 0fh
+	add		al, al
+	lea		bx,VetorHexa
+	and		ah, 0
+	add		bx, ax
+	mov		dl, [bx]
+	mov		bx, FileHandleDst
+	call	setChar
+ACABOUUUU:
 	ret
 putNib	endp
 ;
