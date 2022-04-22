@@ -26,6 +26,7 @@ MsgErroCreateFile	db		"Erro na criacao do arquivo", CR, LF, 0
 MsgErroWriteFile	db		"Erro na escrita do arquivo", CR, LF, 0
 MsgCRLF				db		CR, LF, 0
 MsgSoma				db		"Soma: ", 0
+MsgTotalBytes		db		"Total de Bytes: ",0
         
 SomaCol1			db		0
 SomaCol2			db		0
@@ -37,6 +38,10 @@ TotalBytes			dw 		0
 TotalBytes2			db		0	
 VetorHexa			dw		"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"
 FlagErro			db		0
+BufferWRWORD		dw		0
+sw_n	dw	0
+sw_f	db	0
+sw_m	dw	0
 
         .code
         .startup
@@ -125,6 +130,12 @@ CloseAndFinal:
 		call	fclose
 		cmp		FlagErro,1
 		je		Final
+		lea		bx, MsgTotalBytes
+		call	printf_s
+		mov		ax, TotalBytes
+		call	printf_w
+		lea		bx, MsgCRLF
+		call	printf_s
 		lea		bx,MsgSoma
 		call    printf_s
 		mov		cl, SomaCol1
@@ -228,6 +239,73 @@ printf_h	proc	near
 			call	printf_c
 
 printf_h	endp
+
+;
+;--------------------------------------------------------------------
+;Função: Escreve o valor de AX na tela
+;		printf("%
+;--------------------------------------------------------------------
+printf_w	proc	near
+	; sprintf_w(AX, BufferWRWORD)
+	lea		bx,BufferWRWORD
+	call	sprintf_w
+	
+	; printf_s(BufferWRWORD)
+	lea		bx,BufferWRWORD
+	call	printf_s
+	
+	ret
+printf_w	endp
+
+;
+;--------------------------------------------------------------------
+;Função: Converte um inteiro (n) para (string)
+;		 sprintf(string->BX, "%d", n->AX)
+;--------------------------------------------------------------------
+sprintf_w	proc	near
+	mov		sw_n,ax
+	mov		cx,5
+	mov		sw_m,10000
+	mov		sw_f,0
+	
+sw_do:
+	mov		dx,0
+	mov		ax,sw_n
+	div		sw_m
+	
+	cmp		al,0
+	jne		sw_store
+	cmp		sw_f,0
+	je		sw_continue
+sw_store:
+	add		al,'0'
+	mov		[bx],al
+	inc		bx
+	
+	mov		sw_f,1
+sw_continue:
+	
+	mov		sw_n,dx
+	
+	mov		dx,0
+	mov		ax,sw_m
+	mov		bp,10
+	div		bp
+	mov		sw_m,ax
+	
+	dec		cx
+	cmp		cx,0
+	jnz		sw_do
+
+	cmp		sw_f,0
+	jnz		sw_continua2
+	mov		[bx],'0'
+	inc		bx
+sw_continua2:
+
+	mov		byte ptr[bx],0
+	ret		
+sprintf_w	endp
 
 ;
 ;--------------------------------------------------------------------
