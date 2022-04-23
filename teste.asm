@@ -27,6 +27,7 @@ MsgErroWriteFile	db		"Erro na escrita do arquivo", CR, LF, 0
 MsgCRLF				db		CR, LF, 0
 MsgSoma				db		"Soma: ", 0
 MsgTotalBytes		db		"Total de Bytes: ",0
+MsgSomaNumeros		db		" + 65536 :D",0 
         
 SomaCol1			db		0
 SomaCol2			db		0
@@ -168,16 +169,16 @@ PulaEssaCoisaAqui:
 		je		Final
 		lea		bx, MsgTotalBytes
 		call	printf_s
-		;cmp		TotalBytes2, 1
-		;jne		PulaEsseNumero
-		;mov		dl, 31h
-		;call	printf_c
-;PulaEsseNumero:
 		mov		ax, TotalBytes
 		lea		bx,BufferWRWORD
 		call	sprintf_w
 		lea		bx,BufferWRWORD
 		call	printf_s
+		cmp		TotalBytes2, 1
+		jne		PulaEsseNumero
+		lea		bx, MsgSomaNumeros
+		call	printf_s
+PulaEsseNumero:
 		lea		bx, MsgCRLF
 		call	printf_s
 		lea		bx,MsgSoma
