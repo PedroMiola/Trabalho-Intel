@@ -13,7 +13,7 @@ FileHandleSaida		equ		".res"
         .data
 
 FileName			db		256 dup (?)				; Nome do arquivo a ser lido
-FileNameDst			db		"resultado .txt", 0		; Nome do arquivo a ser escrito
+FileNameDst			db		50	dup(0)				; Nome do arquivo a ser escrito
 FileBuffer			db		0 						; Buffer de leitura do arquivo
 FileHandle			dw		0						; Handler do arquivo de leitura
 FileHandleDst		dw		0						; Handler do arquivo de saida
@@ -33,6 +33,7 @@ SomaCol2			db		0
 SomaCol3			db		0
 SomaCol4			db 		0
 Contador			db		0
+Contador2			dw		0
 TotalBytes			dw 		0
 ;TODO		Fazer TotalBytes2 funcionar
 TotalBytes2			db		0	
@@ -65,6 +66,7 @@ BufferPutChar		db		0
 		jc		ErroOpenFile		;If (CF == 1), erro ao abrir o arquivo	
 		mov		FileHandle,ax		; Salva handle do arquivo
 		;	Cria o arquivo de saida
+		call	pegaNome
 		lea		dx, FileNameDst
 		call	fcreate
 		jc		ErroCreateFile
@@ -540,7 +542,40 @@ fclose	proc	near
 	ret
 fclose	endp
 
+;
+;--------------------------------------------------------------------
+;Função pra pegar o nome do arquivo saida
+;--------------------------------------------------------------------
+pegaNome	proc	near
+LoopPegaNome:
+	lea		bx, FileName
+	mov		cx,	Contador2
+	add		bx, cx
+	mov		al, [bx]
+	cmp		al, 0
+	je		FimPegaNome
+	cmp		al,	2eh
+	je		FimPegaNome
+	lea		bx, FileNameDst
+	mov		cx,	Contador2
+	add		bx, cx
+	mov		[bx], al
+	inc		Contador2
+	jmp		LoopPegaNome
 
+FimPegaNome:
+	lea		bx, FileNameDst
+	mov		cx,	Contador2
+	add		bx,	cx
+	mov		[bx], 2eh
+	inc		bx
+	mov		[bx], 52h
+	inc		bx
+	mov		[bx], 65h
+	inc		bx
+	mov		[bx], 73h
+	ret
+pegaNome	endp
 ;--------------------------------------------------------------------
 		end
 ;--------------------------------------------------------------------
