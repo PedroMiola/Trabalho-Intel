@@ -255,7 +255,7 @@ printf_c	endp
 ;
 ;--------------------------------------------------------------------
 ;Função Escrever um Hexa na tela
-;		Entra: CL -> Hexa a ser escrito
+;		Entra: AL -> Hexa a ser escrito
 ;--------------------------------------------------------------------
 printf_h	proc	near
 			mov		cl, al
